@@ -37,9 +37,10 @@ const updateContactController = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
-  const id: string = req.params.id;
-  const dataContact = req.body;
-  const updatedContact = await updateContactService(dataContact, id);
+  const contactId: string = req.params.id;
+  const clientId = req.client.id;
+  const dataContact: Partial<Contact> = req.body;
+  await updateContactService(dataContact, contactId, clientId);
 
   return res.status(200).json({ message: "Update successful" });
 };
