@@ -1,20 +1,29 @@
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { AuthContext } from "../../../contexts/AuthContext";
 import { Container } from "./style";
 
 const LogoutClient = () => {
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useContext(AuthContext);
 
-  const Logout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("@TOKEN");
     localStorage.removeItem("isAuthenticated");
-    navigate("/login");
+
+    setIsAuthenticated(false);
+
+    navigate("/login", { replace: true });
   };
+
   return (
     <Container>
-      <button type="button" onClick={Logout}>
+      <button type="button" onClick={handleLogout}>
         Logout
       </button>
     </Container>
   );
 };
+
 export default LogoutClient;

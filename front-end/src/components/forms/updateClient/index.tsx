@@ -1,88 +1,157 @@
-import React, { useState } from "react";
-import { FieldValues, useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
-import { IClientDataUpdate } from "../../../interfaces/client";
 import api from "../../../services/api";
-const UpdateClientForm: React.FC<any> = ({ onClose }) => {
-  const [clientValue1, setClientValue1] = useState("");
-  const [clientValue2, setClientValue2] = useState("");
-  const [clientValue3, setClientValue3] = useState("");
 
-  const { register, handleSubmit } = useForm<IClientDataUpdate>({});
+import type {
+  IClientDataUpdate,
+  IClientsList,
+} from "../../../interfaces/client";
 
-  const onSubmitFunction = async (data: FieldValues) => {
+import { FormStyle } from "../updateShared/style";
+
+interface UpdateClientFormProps {
+  client: IClientsList;
+  onClose: () => void;
+  onUpdated: () => Promise<void>;
+  onBusyChange?: (busy: boolean) => void;
+}
+
+type FormData = Pick<IClientsList, "name" | "email" | "telephone">;
+
+const UpdateClientForm = ({
+  client,
+  onClose,
+  onUpdated,
+  onBusyChange,
+}: UpdateClientFormProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { dirtyFields, isSubmitting },
+  } = useForm<FormData>({
+    defaultValues: {
+      name: client.name,
+      email: client.email,
+      telephone: client.telephone,
+    },
+  });
+
+  useEffect(() => {
+    onBusyChange?.(isSubmitting);
+  }, [isSubmitting, onBusyChange]);
+
+  const onSubmitFunction = async (data: FormData) => {
+    const changes: IClientDataUpdate = {};
+
+    // Nome: somente se foi modificado e não está vazio.
+    if (dirtyFields.name) {
+      const name = data.name.trim();
+
+      if (name && name !== client.name) {
+        changes.name = name;
+      }
+    }
+
+    // Email: somente se foi modificado e não está vazio.
+    if (dirtyFields.email) {
+      const email = data.email.trim();
+
+      if (email && email !== client.email) {
+        changes.email = email;
+      }
+    }
+
+    // Telefone: somente se foi modificado e não está vazio.
+    if (dirtyFields.telephone) {
+      const telephone = data.telephone.trim();
+
+      if (telephone && telephone !== client.telephone) {
+        changes.telephone = telephone;
+      }
+    }
+
+    // Impede PATCH sem alterações válidas.
+    if (Object.keys(changes).length === 0) {
+      toast("No valid changes to save");
+      return;
+    }
+
+    const token = localStorage.getItem("@TOKEN");
+
+    if (!token) {
+      toast.error("Session expired. Please log in again.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("@TOKEN");
-      const clientID = localStorage.getItem("@CLIENT_ID");
-      const response = await api.patch(`clients/${clientID}`, data, {
+      await api.patch(`/clients/${client.id}`, changes, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (response.status === 200) {
-        toast.success("Client updated successfully!");
-      } else {
-        console.error("Failed to update client.");
-        toast.error("Email already exists!");
-      }
+
+      await onUpdated();
+
+      toast.success("Client updated successfully!");
+      onClose();
     } catch (error) {
-      console.error(error);
+      console.error("Client update error:", error);
+      toast.error("Failed to update client.");
     }
   };
 
-  const closeModal = () => {
-    onClose();
-  };
-
   return (
-    <form
-      onSubmit={handleSubmit(onSubmitFunction)}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "5px",
-      }}
-    >
-      <input
-        type="text"
-        value={clientValue1}
-        placeholder="Name"
-        {...register("name")}
-        onChange={(event) => setClientValue1(event.target.value)}
-      />
-      <input
-        type="email"
-        value={clientValue2}
-        placeholder="Email"
-        {...register("email")}
-        onChange={(event) => setClientValue2(event.target.value)}
-      />
-      <input
-        type="text"
-        value={clientValue3}
-        {...register("telephone")}
-        placeholder="Phone"
-        onChange={(event) => setClientValue3(event.target.value)}
-      />
-      <button>Update</button>
-      <button
-        className="x"
-        onClick={closeModal}
-        style={{
-          position: "absolute",
-          right: "-15px",
-          top: "-18px",
-          height: "15px",
-          borderRadius: "15px",
-          fontSize: "10px",
-        }}
-      >
-        X
-      </button>
-    </form>
+    <FormStyle noValidate onSubmit={handleSubmit(onSubmitFunction)}>
+      <div className="field">
+        <label htmlFor="edit-client-name">Name</label>
+
+        <input
+          id="edit-client-name"
+          type="text"
+          placeholder="Name"
+          {...register("name")}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="edit-client-email">Email</label>
+
+        <input
+          id="edit-client-email"
+          type="email"
+          placeholder="Email"
+          {...register("email")}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="edit-client-phone">Phone</label>
+
+        <input
+          id="edit-client-phone"
+          type="tel"
+          placeholder="Phone"
+          {...register("telephone")}
+        />
+      </div>
+
+      <div className="form-actions">
+        <button
+          type="button"
+          className="cancel-button"
+          onClick={onClose}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+
+        <button type="submit" className="save-button" disabled={isSubmitting}>
+          {isSubmitting ? "Updating..." : "Update"}
+        </button>
+      </div>
+    </FormStyle>
   );
 };
 
