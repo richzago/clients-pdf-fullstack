@@ -44,16 +44,13 @@ const updateClientController = async (
   return res.status(200).json({ message: "Update successful" });
 };
 
-const listClientsRelatoryController = async (req: Request, res: Response) => {
-  const clients = await listClientsRelatoryService();
-  return res.send(instanceToPlain(clients));
-};
-
 const relatoryClientsController = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
-  const clients = await listClientsRelatoryService();
+  const clientId = req.client.id;
+
+  const clients = await listClientsRelatoryService(clientId);
 
   const clientsWithContacts = clients.map((client) => ({
     client,
@@ -78,6 +75,5 @@ export {
   listClientController,
   deleteClientController,
   updateClientController,
-  listClientsRelatoryController,
   relatoryClientsController,
 };
