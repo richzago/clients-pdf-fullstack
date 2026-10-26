@@ -13,7 +13,7 @@ export const Container = styled.div`
   padding: 12px;
 `;
 
-export const FormStyle = styled.form`
+export const FormStyle = styled.form<React.FormHTMLAttributes<HTMLFormElement>>`
   display: flex;
   flex-direction: column;
   justify-content: center;

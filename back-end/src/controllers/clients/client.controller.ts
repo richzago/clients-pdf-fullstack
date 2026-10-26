@@ -11,7 +11,7 @@ import listClientsRelatoryService from "../../services/clients/listClientsRelato
 
 const createClientController = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<Response> => {
   const clientData = req.body;
   const client: Client = await createClientService(clientData);
@@ -26,7 +26,7 @@ const listClientController = async (req: Request, res: Response) => {
 
 const deleteClientController = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<Response> => {
   const id = req.client.id;
   const deletedClient: void = await deleteClientService(id);
@@ -35,7 +35,7 @@ const deleteClientController = async (
 
 const updateClientController = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<Response> => {
   const id: string = req.params.id;
   const dataUser = req.body;
@@ -49,15 +49,28 @@ const listClientsRelatoryController = async (req: Request, res: Response) => {
   return res.send(instanceToPlain(clients));
 };
 
-const relatoryClientsController = async (req: Request, res: Response) => {
+const relatoryClientsController = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
   const clients = await listClientsRelatoryService();
-  const clientsWithContacts: any = clients.map((client) => ({
+
+  const clientsWithContacts = clients.map((client) => ({
     client,
     contacts: client.contact,
   }));
+
   const html = generateHTML(clientsWithContacts);
 
-  return convertToPDF(html, res);
+  const pdf = await convertToPDF(html);
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="relatorio-clientes.pdf"',
+  );
+
+  return res.status(200).send(pdf);
 };
 
 export {
