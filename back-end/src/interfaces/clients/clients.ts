@@ -20,9 +20,11 @@ export interface IClient {
 export interface IClientUpdate {
   name?: string;
   email?: string;
-  password?: string;
   telephone?: string;
+  password?: string;
+  currentPassword?: string;
 }
+
 
 
 export interface IClientWithContacts {

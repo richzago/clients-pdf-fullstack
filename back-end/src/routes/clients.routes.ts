@@ -7,11 +7,11 @@ import {
   updateClientController,
 } from "../controllers/clients/client.controller";
 import { authClient } from "../middlewares/authClient.middleware";
-import isAccountExistsMiddleware from "../middlewares/handleError.middleware";
 import validateSchema from "../middlewares/validateSchema.middleware";
 import { createClientValidator } from "../schemas/createClient.schema";
 import clientSessionRouter from "./session.routes";
 import { validateUUID } from "../middlewares/validateUUID.middleware";
+import { updateClientValidator } from "../schemas/updateClient.schema";
 
 const clientsRouter = Router();
 
@@ -22,18 +22,12 @@ clientsRouter.post(
 );
 clientsRouter.get("", authClient, listClientController);
 clientsRouter.get("/relatory", authClient, relatoryClientsController);
-clientsRouter.delete(
-  "/:id",
-  authClient,
-  isAccountExistsMiddleware,
-  validateUUID,
-  deleteClientController,
-);
+clientsRouter.delete("/:id", authClient, validateUUID, deleteClientController);
 clientsRouter.patch(
   "/:id",
   authClient,
-  isAccountExistsMiddleware,
   validateUUID,
+  validateSchema(updateClientValidator),
   updateClientController,
 );
 
