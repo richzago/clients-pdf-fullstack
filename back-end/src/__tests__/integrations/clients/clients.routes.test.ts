@@ -5,6 +5,11 @@ import { DataSource } from "typeorm";
 import { mockedCreateClient, mockedLogin } from "../../mocks/clients";
 import { AppDataSource } from "../../../data-source";
 
+jest.mock("../../../utils/convertToPDF", () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+
 jest.setTimeout(30000);
 
 describe("/clients", () => {
@@ -41,7 +46,7 @@ describe("/clients", () => {
       .send(mockedCreateClient);
 
     expect(response.body).toHaveProperty("message");
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(409);
   });
 
   test("GET /clients -> Should be able to list all clients", async () => {
@@ -95,7 +100,7 @@ describe("/clients", () => {
       .get("/clients")
       .set("Authorization", `Bearer ${clientLoginResponse.body.token}`);
     const response = await request(app).patch(
-      `/clients/${clientToBeUpdate.body[0].id}`
+      `/clients/${clientToBeUpdate.body[0].id}`,
     );
     expect(response.body).toHaveProperty("message");
     expect(response.status).toBe(404);
@@ -110,7 +115,7 @@ describe("/clients", () => {
       .set("Authorization", `Bearer ${clientLoginResponse.body.token}`);
 
     const response = await request(app).delete(
-      `/clients/${clientTobeDeleted.body[0].id}`
+      `/clients/${clientTobeDeleted.body[0].id}`,
     );
 
     expect(response.body).toHaveProperty("message");
