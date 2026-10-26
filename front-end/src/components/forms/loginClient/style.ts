@@ -2,103 +2,169 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+
+  width: 100%;
+  padding: 64px 16px;
 `;
 
-export const FormLogin = styled.form<React.FormHTMLAttributes<HTMLFormElement>>`
+export const FormLogin = styled.form`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 20px;
 
-  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
 
-  p,
-  h6,
+  background-color: #111c31;
+  border: 1px solid #334155;
+  border-radius: 12px;
+
   h2 {
-    color: white;
+    margin: 0;
+
+    color: #f8fafc;
+    font-size: 26px;
+  }
+
+  .subtitle {
+    margin: -12px 0 4px;
+
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    color: #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
   }
 
   input {
-    padding: 3px;
-    font-size: 15px;
-    border-width: 1px;
-    border-color: #ededed;
-    background-color: #ffffff;
-    color: black;
-    border-style: solid;
-    border-radius: 8px;
-    box-shadow: 0px 0px 11px rgba(66, 66, 66, 0.75);
-    text-shadow: -5px 0px 8px rgba(66, 66, 66, 0.75);
-  }
-  input:focus {
-    outline: none;
-  }
+    width: 100%;
+    padding: 12px;
 
-  button {
-    background-color: rgba(23, 26, 32, 0.8);
-    border: none;
+    background-color: #0f172a;
+    color: #f8fafc;
+
+    border: 1px solid #475569;
     border-radius: 6px;
-    color: #fff;
-    flex-grow: 1;
 
-    font-family: SFProText-Regular, Helvetica, Arial, sans-serif;
     font-size: 15px;
-
-    height: 36px;
-    line-height: 20px;
-
-    margin-left: 8px;
-    margin-right: 6px;
-    margin-top: -10px;
-
-    min-width: 185px;
-    padding: 0 16px 0 16px;
-    color: #ffff;
-    cursor: pointer;
   }
 
-  button:hover {
-    background-color: rgba(23, 26, 32, 1);
-    cursor: pointer;
+  input:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
   }
 
-  svg {
+  .password-field {
+    position: relative;
+  }
+
+  .password-field input {
+    padding-right: 48px;
+  }
+
+  .password-toggle {
     position: absolute;
-    top: 152px;
-    left: 12px;
-    height: 12px;
-    border-radius: 7px;
-    color: #ffff;
-  }
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
 
-  .btnRegister {
-    margin-top: 1rem;
-    font-weight: 0;
-    font-size: 14px;
-    color: #fff;
-    background-color: #0066cc;
-    padding: 10px 30px;
-    border: 2px solid #0066cc;
-    box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
-    border-radius: 50px;
-    transition: 1000ms;
-    height: 25px;
-    transform: translateY(0);
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
+
+    width: 32px;
+    height: 32px;
+    padding: 0;
+
+    background: transparent;
+    color: #94a3b8;
+
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
   }
 
-  .btnRegister:hover {
-    transition: 1000ms;
-    padding: 10px 50px;
-    transform: translateY(-0px);
-    background-color: #fff;
-    color: #0066cc;
-    border: solid 2px #0066cc;
+  .password-toggle:hover {
+    color: #f8fafc;
+  }
+
+  .password-toggle:focus-visible {
+    outline: 2px solid #60a5fa;
+  }
+
+  .password-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .submit-button,
+  .register-button {
+    width: 100%;
+    padding: 12px;
+
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: background-color 0.2s;
+  }
+
+  .submit-button {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+  }
+
+  .submit-button:hover {
+    background-color: #1d4ed8;
+  }
+
+  .register-button {
+    background-color: transparent;
+    color: #f8fafc;
+    border: 1px solid #475569;
+  }
+
+  .register-button:hover {
+    background-color: #1e293b;
+  }
+
+  .submit-button:focus-visible,
+  .register-button:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+  }
+
+  .register-text {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .error {
+    margin: 0;
+    color: #fca5a5;
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 24px;
+
+    h2 {
+      font-size: 24px;
+    }
   }
 `;
