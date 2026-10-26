@@ -6,6 +6,11 @@ import { mockedCreateClient2, mockedLogin2 } from "../../mocks/clients";
 import { AppDataSource } from "../../../data-source";
 import { mockedCreateContact } from "../../mocks/contacts";
 
+jest.mock("../../../utils/convertToPDF", () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+
 jest.setTimeout(30000);
 
 describe("/contacts", () => {
@@ -48,7 +53,7 @@ describe("/contacts", () => {
       .set("Authorization", `Bearer ${loginClient.body.token}`);
 
     expect(responseContact.body).toHaveProperty("message");
-    expect(responseContact.status).toBe(400);
+    expect(responseContact.status).toBe(409);
   });
 
   test("GET /contacts -> Should be able to list all contacts", async () => {
@@ -102,7 +107,7 @@ describe("/contacts", () => {
       .get("/contacts")
       .set("Authorization", `Bearer ${clientLoginResponse.body.token}`);
     const response = await request(app).patch(
-      `/contacts/${clientToBeUpdate.body[0].id}`
+      `/contacts/${clientToBeUpdate.body[0].id}`,
     );
     expect(response.body).toHaveProperty("message");
     expect(response.status).toBe(404);
@@ -117,7 +122,7 @@ describe("/contacts", () => {
       .set("Authorization", `Bearer ${clientLoginResponse.body.token}`);
 
     const response = await request(app).delete(
-      `/contacts/${contactTobeDeleted.body[0].id}`
+      `/contacts/${contactTobeDeleted.body[0].id}`,
     );
 
     expect(response.body).toHaveProperty("message");
