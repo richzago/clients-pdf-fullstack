@@ -1,17 +1,30 @@
-import { ValidationError } from "yup";
-import { NextFunction, Response, Request } from "express";
+import { Request, Response, NextFunction } from "express";
+import { AnySchema, ValidationError } from "yup";
 
-function validateSchema(schema: any) {
-  return async (request: Request, response: Response, next: NextFunction) => {
+const validateSchema = (schema: AnySchema) => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      await schema.validate(request.body, { abortEarly: false });
-      next();
-    } catch (err) {
-      return response.status(400).json({
-        message: (err as ValidationError).errors,
+      req.body = await schema.validate(req.body, {
+        abortEarly: false,
+        strict: true,
       });
+
+      next();
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        res.status(400).json({
+          message: error.errors,
+        });
+        return;
+      }
+
+      next(error);
     }
   };
-}
+};
 
 export default validateSchema;

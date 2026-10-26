@@ -3,47 +3,50 @@ import { Client } from "../../entities/client.entity";
 import { Contact } from "../../entities/contact.entity";
 import { AppError } from "../../errors/appError";
 import { IContactRequest } from "../../interfaces/contacts/contacts";
+import { handleUniqueViolation } from "../../utils/handleUniqueViolation";
 
 const createContactService = async (
   contactData: IContactRequest,
-  clientID: string
+  clientId: string,
 ): Promise<Contact> => {
   const contactRepository = AppDataSource.getRepository(Contact);
   const clientRepository = AppDataSource.getRepository(Client);
 
-  const getClient = await clientRepository.findOneBy({
-    id: clientID,
+  // Confirma a existência do cliente autenticado.
+  const clientExists = await clientRepository.existsBy({
+    id: clientId,
   });
 
-  if (!getClient) {
-    throw new AppError("Not found", 404);
+  if (!clientExists) {
+    throw new AppError("Client not found", 404);
   }
 
-  const contacts: Contact[] = await contactRepository.find();
-
-  const emailAlreadyExists = contacts.find(
-    (contact) => contact.email === contactData.email
-  );
+  // Verifica o e-mail diretamente no banco.
+  const emailAlreadyExists = await contactRepository.existsBy({
+    email: contactData.email,
+  });
 
   if (emailAlreadyExists) {
-    throw new AppError("Email already exists", 400);
+    throw new AppError("Email already exists", 409);
   }
 
-  const newContact: Contact = new Contact();
-  newContact.name = contactData.name;
-  newContact.telephone = contactData.telephone;
-  newContact.email = contactData.email;
-  newContact.createdAt = new Date();
-  newContact.updatedAt = new Date();
-  newContact.client = getClient;
-
-  await contactRepository.save(newContact);
-
-  const contactCreated: Contact | null = await contactRepository.findOneBy({
-    id: newContact.id,
+  // Referência ao cliente existente, sem carregá-lo inteiro.
+  const client = clientRepository.create({
+    id: clientId,
   });
 
-  return contactCreated!;
+  const contact = contactRepository.create({
+    name: contactData.name,
+    email: contactData.email,
+    telephone: contactData.telephone,
+    client,
+  });
+
+  try {
+    return await contactRepository.save(contact);
+  } catch (error) {
+    return handleUniqueViolation(error);
+  }
 };
 
 export default createContactService;
