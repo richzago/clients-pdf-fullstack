@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { IClientsList, IContact, IContactRegister } from "../interfaces/client";
 
 export const AuthContext = createContext<clientContextData>(
-  {} as clientContextData
+  {} as clientContextData,
 );
 
 export interface IDataRegister {
@@ -32,18 +32,15 @@ interface IClientProps {
 interface clientContextData {
   clientRegister: (IDataRegister: IDataRegister) => void;
   clientLogin: (IDataClientLogin: IDataClientLogin) => void;
-  listClients: (
-    IClientsList: IClientsList | React.MouseEvent<HTMLButtonElement>
-  ) => void;
+  listClients: () => Promise<void>;
+  listContacts: () => Promise<void>;
   deleteClient: (id: string) => void;
   clients: IClientsList[];
   contacts: IContact[];
   client: IDataRegister;
   setClient: React.Dispatch<React.SetStateAction<string>>;
   contactRegister: (IDataContactRegister: IContactRegister) => void;
-  listContacts: (
-    IDataContactRegister: IContactRegister | React.MouseEvent<HTMLButtonElement>
-  ) => void;
+
   deleteContact: (id: string) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;

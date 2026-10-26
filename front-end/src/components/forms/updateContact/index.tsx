@@ -1,38 +1,93 @@
-import { useState } from "react";
-import { FieldValues, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { IContactDataUpdate } from "../../../interfaces/client";
+
 import api from "../../../services/api";
 
-const UpdateContactForm: React.FC<any> = ({ onClose }) => {
-  const [contactValue1, setContactValue1] = useState("");
-  const [contactValue2, setContactValue2] = useState("");
-  const [contactValue3, setContactValue3] = useState("");
+import { IContact, IContactDataUpdate } from "../../../interfaces/client";
 
-  const { register, handleSubmit } = useForm<IContactDataUpdate>({});
+interface UpdateContactFormProps {
+  contact: IContact;
+  onClose: () => void;
+  onUpdated: () => Promise<void>;
+}
 
-  const onSubmitFunction = async (data: FieldValues) => {
+type FormData = Pick<IContact, "name" | "email" | "telephone">;
+
+const UpdateContactForm = ({
+  contact,
+  onClose,
+  onUpdated,
+}: UpdateContactFormProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { dirtyFields, isSubmitting },
+  } = useForm<FormData>({
+    defaultValues: {
+      name: contact.name,
+      email: contact.email,
+      telephone: contact.telephone,
+    },
+  });
+
+  const onSubmitFunction = async (data: FormData) => {
+    const changes: IContactDataUpdate = {};
+
+    // Nome
+    if (dirtyFields.name) {
+      const name = data.name.trim();
+
+      if (name && name !== contact.name) {
+        changes.name = name;
+      }
+    }
+
+    // Email
+    if (dirtyFields.email) {
+      const email = data.email.trim();
+
+      if (email && email !== contact.email) {
+        changes.email = email;
+      }
+    }
+
+    // Telefone
+    if (dirtyFields.telephone) {
+      const telephone = data.telephone.trim();
+
+      if (telephone && telephone !== contact.telephone) {
+        changes.telephone = telephone;
+      }
+    }
+
+    // Nenhuma alteração válida
+    if (Object.keys(changes).length === 0) {
+      toast("No valid changes to save");
+      return;
+    }
+
+    const token = localStorage.getItem("@TOKEN");
+
+    if (!token) {
+      toast.error("Session expired. Please log in again.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("@TOKEN");
-      const contactID = localStorage.getItem("@CONTACT_ID");
-      const response = await api.patch(`contacts/${contactID}`, data, {
+      await api.patch(`/contacts/${contact.id}`, changes, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (response.status === 200) {
-        toast.success("Contact updated successfully!");
-      } else {
-        console.error("Failed to update client.");
-        toast.error("Email already exists!");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
-  const closeModal = () => {
-    onClose();
+      toast.success("Contact updated successfully!");
+
+      await onUpdated();
+      onClose();
+    } catch (error) {
+      console.error("Contact update error:", error);
+      toast.error("Failed to update contact.");
+    }
   };
 
   return (
@@ -46,33 +101,20 @@ const UpdateContactForm: React.FC<any> = ({ onClose }) => {
         gap: "5px",
       }}
     >
-      <input
-        type="text"
-        value={contactValue1}
-        placeholder="Name"
-        {...register("name")}
-        onChange={(event) => setContactValue1(event.target.value)}
-      />
+      <input type="text" placeholder="Name" {...register("name")} />
 
-      <input
-        type="text"
-        value={contactValue2}
-        placeholder="Email"
-        {...register("email")}
-        onChange={(event) => setContactValue2(event.target.value)}
-      />
+      <input type="email" placeholder="Email" {...register("email")} />
 
-      <input
-        type="text"
-        value={contactValue3}
-        placeholder="Phone"
-        {...register("telephone")}
-        onChange={(event) => setContactValue3(event.target.value)}
-      />
-      <button>Update</button>
+      <input type="text" placeholder="Phone" {...register("telephone")} />
+
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Updating..." : "Update"}
+      </button>
+
       <button
+        type="button"
         className="x"
-        onClick={closeModal}
+        onClick={onClose}
         style={{
           position: "absolute",
           right: "-15px",
@@ -87,4 +129,5 @@ const UpdateContactForm: React.FC<any> = ({ onClose }) => {
     </form>
   );
 };
+
 export default UpdateContactForm;
