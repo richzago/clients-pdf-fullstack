@@ -1,14 +1,18 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
 import api from "../../../services/api";
 
-import { IContact, IContactDataUpdate } from "../../../interfaces/client";
+import type { IContact, IContactDataUpdate } from "../../../interfaces/client";
+
+import { FormStyle } from "../updateShared/style";
 
 interface UpdateContactFormProps {
   contact: IContact;
   onClose: () => void;
   onUpdated: () => Promise<void>;
+  onBusyChange?: (busy: boolean) => void;
 }
 
 type FormData = Pick<IContact, "name" | "email" | "telephone">;
@@ -17,6 +21,7 @@ const UpdateContactForm = ({
   contact,
   onClose,
   onUpdated,
+  onBusyChange,
 }: UpdateContactFormProps) => {
   const {
     register,
@@ -30,10 +35,15 @@ const UpdateContactForm = ({
     },
   });
 
+  // Informa ao modal quando existe uma atualização em andamento.
+  useEffect(() => {
+    onBusyChange?.(isSubmitting);
+  }, [isSubmitting, onBusyChange]);
+
   const onSubmitFunction = async (data: FormData) => {
     const changes: IContactDataUpdate = {};
 
-    // Nome
+    // Somente o nome modificado e não vazio.
     if (dirtyFields.name) {
       const name = data.name.trim();
 
@@ -42,7 +52,7 @@ const UpdateContactForm = ({
       }
     }
 
-    // Email
+    // Somente o email modificado e não vazio.
     if (dirtyFields.email) {
       const email = data.email.trim();
 
@@ -51,7 +61,7 @@ const UpdateContactForm = ({
       }
     }
 
-    // Telefone
+    // Somente o telefone modificado e não vazio.
     if (dirtyFields.telephone) {
       const telephone = data.telephone.trim();
 
@@ -60,7 +70,6 @@ const UpdateContactForm = ({
       }
     }
 
-    // Nenhuma alteração válida
     if (Object.keys(changes).length === 0) {
       toast("No valid changes to save");
       return;
@@ -80,9 +89,9 @@ const UpdateContactForm = ({
         },
       });
 
-      toast.success("Contact updated successfully!");
-
       await onUpdated();
+
+      toast.success("Contact updated successfully!");
       onClose();
     } catch (error) {
       console.error("Contact update error:", error);
@@ -91,42 +100,55 @@ const UpdateContactForm = ({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmitFunction)}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "5px",
-      }}
-    >
-      <input type="text" placeholder="Name" {...register("name")} />
+    <FormStyle noValidate onSubmit={handleSubmit(onSubmitFunction)}>
+      <div className="field">
+        <label htmlFor="edit-contact-name">Name</label>
 
-      <input type="email" placeholder="Email" {...register("email")} />
+        <input
+          id="edit-contact-name"
+          type="text"
+          placeholder="Name"
+          {...register("name")}
+        />
+      </div>
 
-      <input type="text" placeholder="Phone" {...register("telephone")} />
+      <div className="field">
+        <label htmlFor="edit-contact-email">Email</label>
 
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Updating..." : "Update"}
-      </button>
+        <input
+          id="edit-contact-email"
+          type="email"
+          placeholder="Email"
+          {...register("email")}
+        />
+      </div>
 
-      <button
-        type="button"
-        className="x"
-        onClick={onClose}
-        style={{
-          position: "absolute",
-          right: "-15px",
-          top: "-18px",
-          height: "15px",
-          borderRadius: "15px",
-          fontSize: "10px",
-        }}
-      >
-        X
-      </button>
-    </form>
+      <div className="field">
+        <label htmlFor="edit-contact-phone">Phone</label>
+
+        <input
+          id="edit-contact-phone"
+          type="tel"
+          placeholder="Phone"
+          {...register("telephone")}
+        />
+      </div>
+
+      <div className="form-actions">
+        <button
+          type="button"
+          className="cancel-button"
+          onClick={onClose}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+
+        <button type="submit" className="save-button" disabled={isSubmitting}>
+          {isSubmitting ? "Updating..." : "Update"}
+        </button>
+      </div>
+    </FormStyle>
   );
 };
 

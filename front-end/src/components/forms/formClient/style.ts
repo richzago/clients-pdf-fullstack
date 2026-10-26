@@ -2,101 +2,124 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   display: flex;
-  flex-direction: row;
   justify-content: center;
+
+  width: 100%;
+  padding: 48px 16px;
 `;
-export const FormStyle = styled.form<React.FormHTMLAttributes<HTMLFormElement>>`
+
+export const FormStyle = styled.form`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 20px;
 
-  margin: 2rem 0;
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
 
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
+  background-color: #111c31;
+  border: 1px solid #334155;
+  border-radius: 12px;
+
+  h2 {
     margin: 0;
+    color: #f8fafc;
+    font-size: 26px;
   }
 
-  input[type="number"] {
-    -moz-appearance: textfield;
+  .subtitle {
+    margin: -12px 0 4px;
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    color: #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
   }
 
   input {
-    min-width: 190px;
-    padding: 5px;
-    font-size: 16px;
-    border-width: 1px;
-    border-color: #f9f7f7;
-    background-color: #ffffff;
-    color: #000000;
-    border-style: solid;
-    border-radius: 0px;
-    box-shadow: 0px 0px 5px rgba(66, 66, 66, 0.22);
-  }
-  input:focus {
-    outline: none;
+    width: 100%;
+    padding: 12px;
+
+    background-color: #0f172a;
+    color: #f8fafc;
+
+    border: 1px solid #475569;
+    border-radius: 6px;
+    font-size: 15px;
   }
 
-  p,
-  h2 {
-    color: #ffff;
+  input::placeholder {
+    color: #94a3b8;
   }
 
-  .btn {
-    margin-bottom: 1.5rem;
-    font-weight: 0;
-    font-size: 14px;
-    color: #fff;
-    background-color: #0066cc;
-    padding: 10px 30px;
-    border: 2px solid #0066cc;
-    box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
-    border-radius: 50px;
-    transition: 1000ms;
-    transform: translateY(0);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    cursor: pointer;
+  input:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
   }
 
-  .btn:hover {
-    transition: 1000ms;
-    padding: 10px 50px;
-    transform: translateY(-0px);
-    background-color: #fff;
-    color: #0066cc;
-    border: solid 2px #0066cc;
-  }
-
-  .btnback {
-    font-weight: bolder;
-    font-size: 14px;
-    color: #000000;
-    background-color: #fff;
-    padding: 5px 15px;
-    border: 2px solid #0066cc;
-    box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
-    border-radius: 50px;
-    transition: 1000ms;
-    transform: translateY(0);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .btnback:hover {
-    transition: 1000ms;
-    padding: 10px 20px;
-    transform: translateY(-0px);
-    background-color: #fff;
-    color: #0066cc;
-    border: solid 2px #0066cc;
+  input[aria-invalid="true"] {
+    border-color: #fca5a5;
   }
 
   .error {
-    color: red;
+    margin: 0;
+    color: #fca5a5;
+    font-size: 13px;
+  }
+
+  .submit-button,
+  .back-button {
+    width: 100%;
+    padding: 12px;
+
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .submit-button {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+  }
+
+  .submit-button:hover {
+    background-color: #1d4ed8;
+  }
+
+  .back-button {
+    background-color: transparent;
+    color: #f8fafc;
+    border: 1px solid #475569;
+  }
+
+  .back-button:hover {
+    background-color: #1e293b;
+  }
+
+  .submit-button:focus-visible,
+  .back-button:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 24px;
+
+    h2 {
+      font-size: 24px;
+    }
   }
 `;
