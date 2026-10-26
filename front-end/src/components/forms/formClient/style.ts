@@ -5,7 +5,7 @@ export const Container = styled.div`
   flex-direction: row;
   justify-content: center;
 `;
-export const FormStyle = styled.form`
+export const FormStyle = styled.form<React.FormHTMLAttributes<HTMLFormElement>>`
   display: flex;
   flex-direction: column;
   align-items: center;

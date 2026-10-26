@@ -52,7 +52,11 @@ const LoginClient = () => {
         </button>
 
         <h6>Don't have an account?</h6>
-        <button className="btnRegister" type="button" onClick={() => navigate("/clients")}>
+        <button
+          className="btnRegister"
+          type="button"
+          onClick={() => navigate("/clients")}
+        >
           Register
         </button>
       </FormLogin>

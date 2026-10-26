@@ -7,7 +7,7 @@ export const Container = styled.div`
   justify-content: center;
 `;
 
-export const FormLogin = styled.form`
+export const FormLogin = styled.form<React.FormHTMLAttributes<HTMLFormElement>>`
   display: flex;
   flex-direction: column;
   align-items: center;
