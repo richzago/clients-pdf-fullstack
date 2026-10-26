@@ -29,10 +29,12 @@ const deleteContactController = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
-  const id: string = req.params.id;
-  const deletedContact: void = await deleteContactService(id);
-  return res.status(204).json(deletedContact);
+  const contactId = req.params.id;
+  const clientId = req.client.id;
+  await deleteContactService(contactId, clientId);
+  return res.status(204).send();
 };
+
 const updateContactController = async (
   req: Request,
   res: Response,
