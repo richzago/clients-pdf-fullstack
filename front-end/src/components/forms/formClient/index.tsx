@@ -1,10 +1,13 @@
 import { useForm } from "react-hook-form";
 import { Container, FormStyle } from "./style";
-import { AuthContext, IDataRegister } from "../../../contexts/AuthContext";
+import { AuthContext } from "../../../contexts/AuthContext";
+import { InferType } from "yup";
 import { useContext } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schemaClientRegister } from "../../../validations/validationRegister";
 import { useNavigate } from "react-router-dom";
+
+type ClientRegisterFormData = InferType<typeof schemaClientRegister>;
 
 export const FormClientRegister = () => {
   const navigate = useNavigate();
@@ -14,13 +17,12 @@ export const FormClientRegister = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<IDataRegister>({
+  } = useForm<ClientRegisterFormData>({
     resolver: yupResolver(schemaClientRegister),
   });
 
-  const onSubmitFunction = (data: IDataRegister) => {
-    const castedData = data as IDataRegister;
-    clientRegister(castedData);
+  const onSubmitFunction = (data: ClientRegisterFormData) => {
+    clientRegister(data);
   };
 
   return (

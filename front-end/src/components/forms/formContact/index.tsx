@@ -4,7 +4,9 @@ import { AuthContext } from "../../../contexts/AuthContext";
 import { Container, FormStyle } from "./style";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schemaContactRegister } from "../../../validations/validationRegister";
-import { IContactRegister } from "../../../interfaces/client";
+import { InferType } from "yup";
+
+type ContactRegisterFormData = InferType<typeof schemaContactRegister>;
 
 const FormContactRegister = () => {
   const { contactRegister } = useContext(AuthContext);
@@ -13,13 +15,12 @@ const FormContactRegister = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<IContactRegister>({
+  } = useForm<ContactRegisterFormData>({
     resolver: yupResolver(schemaContactRegister),
   });
 
-  const onSubmitFunction = (data: any) => {
-    const castedData = data as any;
-    contactRegister(castedData);
+  const onSubmitFunction = (data: ContactRegisterFormData) => {
+    contactRegister(data);
   };
 
   return (
