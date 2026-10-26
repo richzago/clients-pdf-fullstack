@@ -1,64 +1,82 @@
 import { useContext, useState } from "react";
+
 import { AuthContext } from "../../../contexts/AuthContext";
-import { IContact, IContactDataUpdate } from "../../../interfaces/client";
+import { IContact } from "../../../interfaces/client";
+
 import UpdateContactForm from "../../forms/updateContact";
 import { Container, MainDiv } from "./style";
 
 export const DashboardContact = () => {
-  const [isListClientsShowing, setIsListClientsShowing] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
   const { contacts, listContacts, deleteContact } = useContext(AuthContext);
 
-  const toggleListContacts = () => {
-    setIsListClientsShowing(!isListClientsShowing);
-    if (!isListClientsShowing) {
-      listContacts({} as IContact);
+  // Controla a exibição da lista de contatos
+  const [isListContactsShowing, setIsListContactsShowing] = useState(false);
+
+  // Armazena o contato selecionado para edição
+  const [editingContact, setEditingContact] = useState<IContact | null>(null);
+
+  // Exibe ou oculta a lista
+  const toggleListContacts = async () => {
+    if (!isListContactsShowing) {
+      await listContacts();
     }
+
+    setIsListContactsShowing((previous) => !previous);
   };
 
-  const handleEditClick = (contact: IContactDataUpdate) => {
-    setShowModal(true);
+  // Abre o modal com os dados do contato selecionado
+  const handleEditClick = (contact: IContact) => {
+    setEditingContact(contact);
   };
 
+  // Fecha o modal de edição
   const handleCloseModal = () => {
-    setShowModal(false);
+    setEditingContact(null);
   };
 
   return (
     <Container>
       <MainDiv>
         <h3>List Contacts, Delete and Edit. Just click in Search Contacts!</h3>
-        <button onClick={toggleListContacts}>Search Contacts!</button>
-        {isListClientsShowing && contacts.length === 0 ? (
-          <p>There are no contacts to show</p>
-        ) : (
-          contacts.map((contact) => (
-            <li key={String(contact.id)}>
-              <p>Name: {String(contact.name)}</p>
-              <p>Telephone: {String(contact.telephone)}</p>
-              <p>E-mail: {String(contact.email)}</p>
-              <p>Created at: {String(contact.createdAt)}</p>
-              <p>Updated at: {String(contact.updatedAt)}</p>
-              <button onClick={() => deleteContact(contact.id)}>
-                Delete Contact
-              </button>
-              <button onClick={() => handleEditClick(contact)}>
-                Edit Client
-              </button>
-            </li>
-          ))
-        )}
+
+        <button type="button" onClick={toggleListContacts}>
+          Search Contacts!
+        </button>
+
+        {isListContactsShowing &&
+          (contacts.length === 0 ? (
+            <p>There are no contacts to show</p>
+          ) : (
+            contacts.map((contact) => (
+              <li key={contact.id}>
+                <p>Name: {contact.name}</p>
+                <p>Telephone: {contact.telephone}</p>
+                <p>E-mail: {contact.email}</p>
+                <p>Created at: {contact.createdAt}</p>
+                <p>Updated at: {contact.updatedAt}</p>
+
+                <button type="button" onClick={() => deleteContact(contact.id)}>
+                  Delete Contact
+                </button>
+
+                <button type="button" onClick={() => handleEditClick(contact)}>
+                  Edit Contact
+                </button>
+              </li>
+            ))
+          ))}
       </MainDiv>
-      {showModal && (
+
+      {/* Modal de edição */}
+      {editingContact && (
         <div
           className="modal_1"
           style={{
             position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             background: "rgba(0, 0, 0, 0.5)",
           }}
         >
@@ -73,7 +91,11 @@ export const DashboardContact = () => {
               transform: "translate(-50%, -50%)",
             }}
           >
-            <UpdateContactForm onClose={handleCloseModal} />
+            <UpdateContactForm
+              contact={editingContact}
+              onClose={handleCloseModal}
+              onUpdated={listContacts}
+            />
           </div>
         </div>
       )}

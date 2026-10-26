@@ -1,26 +1,37 @@
 import { useContext, useState } from "react";
+
 import { Container, MainDiv } from "./style";
-import ClientUpdateForm from "../../../components/forms/updateClient";
+import ClientUpdateForm from "../../forms/updateClient";
 
 import { AuthContext } from "../../../contexts/AuthContext";
-import { IClientDataUpdate, IClientsList } from "../../../interfaces/client";
+import { IClientsList } from "../../../interfaces/client";
 
 export const DashboardClient = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [isListClientsShowing, setIsListClientsShowing] = useState(false);
   const { clients, listClients, deleteClient } = useContext(AuthContext);
 
-  const handleEditClick = (client: IClientDataUpdate) => {
-    setShowModal(true);
+  // Controla a exibição da lista de clientes
+  const [isListClientsShowing, setIsListClientsShowing] = useState(false);
+
+  // Armazena o cliente selecionado para edição
+  const [editingClient, setEditingClient] = useState<IClientsList | null>(null);
+
+  // Exibe ou oculta a lista
+  const toggleListClients = async () => {
+    if (!isListClientsShowing) {
+      await listClients();
+    }
+
+    setIsListClientsShowing((previous) => !previous);
   };
 
+  // Abre o modal com os dados do cliente selecionado
+  const handleEditClick = (client: IClientsList) => {
+    setEditingClient(client);
+  };
+
+  // Fecha o modal
   const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  const toggleListClients = () => {
-    listClients({} as IClientsList);
-    setIsListClientsShowing(!isListClientsShowing);
+    setEditingClient(null);
   };
 
   return (
@@ -28,18 +39,23 @@ export const DashboardClient = () => {
       <MainDiv>
         <h3>Your information, Delete and Edit. Just click in Client!</h3>
 
-        <button onClick={toggleListClients}> Client</button>
+        <button type="button" onClick={toggleListClients}>
+          Client
+        </button>
+
         {isListClientsShowing &&
           clients.map((client) => (
-            <li key={String(client.id)}>
-              <p>Name: {String(client.name)}</p>
-              <p>Telephone: {String(client.telephone)}</p>
-              <p>E-mail: {String(client.email)}</p>
-              <p>Created at: {String(client.createdAt)}</p>
-              <p>Updated At: {String(client.updatedAt)}</p>
-              {client.contact && client.contact.length ? (
+            <li key={client.id}>
+              <p>Name: {client.name}</p>
+              <p>Telephone: {client.telephone}</p>
+              <p>E-mail: {client.email}</p>
+              <p>Created at: {client.createdAt}</p>
+              <p>Updated At: {client.updatedAt}</p>
+
+              {client.contact && client.contact.length > 0 ? (
                 <>
                   <p>Contacts:</p>
+
                   <ul>
                     {client.contact.map((contact) => (
                       <li key={contact.id}>
@@ -54,24 +70,28 @@ export const DashboardClient = () => {
               ) : (
                 <p>Contact: This client doesn't have any contacts</p>
               )}
-              <button onClick={() => deleteClient(client.id)}>
+
+              <button type="button" onClick={() => deleteClient(client.id)}>
                 Delete Client
               </button>
-              <button onClick={() => handleEditClick(client)}>
+
+              <button type="button" onClick={() => handleEditClick(client)}>
                 Edit Client
               </button>
             </li>
           ))}
       </MainDiv>
-      {showModal && (
+
+      {/* Modal de edição */}
+      {editingClient && (
         <div
           className="modal_1"
           style={{
             position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             background: "rgba(0, 0, 0, 0.5)",
           }}
         >
@@ -86,7 +106,11 @@ export const DashboardClient = () => {
               transform: "translate(-50%, -50%)",
             }}
           >
-            <ClientUpdateForm onClose={handleCloseModal} />
+            <ClientUpdateForm
+              client={editingClient}
+              onClose={handleCloseModal}
+              onUpdated={listClients}
+            />
           </div>
         </div>
       )}
