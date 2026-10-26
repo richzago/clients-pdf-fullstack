@@ -1,16 +1,28 @@
+
+import "dotenv/config";
 import app from "./app";
 import { AppDataSource } from "./data-source";
-import "dotenv/config";
 
+const PORT = process.env.PORT || 3000;
 
-(async () => {
-  await AppDataSource.initialize().catch((err) => {
-    console.error("Error during Data Source initialization", err);
-  });
+const startServer = async (): Promise<void> => {
+  try {
+    await AppDataSource.initialize();
 
-  const PORT = process.env.PORT;
+    console.log("Banco de dados conectado com sucesso.");
 
-  app.listen(PORT || 3000, () => {
-    console.log(`Servidor executando na porta ${PORT}`);
-  });
-})();
+    const server = app.listen(PORT, () => {
+      console.log(`Servidor executando na porta ${PORT}`);
+    });
+
+    server.on("error", (error: Error) => {
+      console.error("Erro ao iniciar servidor HTTP:", error);
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error("Erro ao conectar com o banco de dados:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
