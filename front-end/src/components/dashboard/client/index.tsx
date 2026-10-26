@@ -1,94 +1,143 @@
 import { useContext, useState } from "react";
-import { Container, MainDiv } from "./style";
-import ClientUpdateForm from "../../../components/forms/updateClient";
 
 import { AuthContext } from "../../../contexts/AuthContext";
-import { IClientDataUpdate, IClientsList } from "../../../interfaces/client";
+import type { IClientsList } from "../../../interfaces/client";
+
+import UpdateClientForm from "../../forms/updateClient";
+import Modal from "../../ui/Modal";
+
+import { Container, MainDiv } from "./style";
+import ConfirmDialog from "../../ui/Modal/ConfirmDialog";
 
 export const DashboardClient = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [isListClientsShowing, setIsListClientsShowing] = useState(false);
   const { clients, listClients, deleteClient } = useContext(AuthContext);
 
-  const handleEditClick = (client: IClientDataUpdate) => {
-    setShowModal(true);
+  const [isListClientsShowing, setIsListClientsShowing] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [editBusy, setEditBusy] = useState(false);
+
+  const [editingClient, setEditingClient] = useState<IClientsList | null>(null);
+
+  const [deletingClient, setDeletingClient] = useState<IClientsList | null>(
+    null,
+  );
+
+  const toggleListClients = async () => {
+    if (!isListClientsShowing) {
+      setIsLoading(true);
+
+      try {
+        await listClients();
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    setIsListClientsShowing((previous) => !previous);
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  const toggleListClients = () => {
-    listClients({} as IClientsList);
-    setIsListClientsShowing(!isListClientsShowing);
+  const handleCloseEdit = () => {
+    setEditingClient(null);
+    setEditBusy(false);
   };
 
   return (
-    <Container>
-      <MainDiv>
-        <h3>Your information, Delete and Edit. Just click in Client!</h3>
+    <Container aria-labelledby="client-title">
+      <div className="section-header">
+        <div>
+          <h3 id="client-title">Your account</h3>
 
-        <button onClick={toggleListClients}> Client</button>
-        {isListClientsShowing &&
-          clients.map((client) => (
-            <li key={String(client.id)}>
-              <p>Name: {String(client.name)}</p>
-              <p>Telephone: {String(client.telephone)}</p>
-              <p>E-mail: {String(client.email)}</p>
-              <p>Created at: {String(client.createdAt)}</p>
-              <p>Updated At: {String(client.updatedAt)}</p>
-              {client.contact && client.contact.length ? (
-                <>
-                  <p>Contacts:</p>
-                  <ul>
-                    {client.contact.map((contact) => (
-                      <li key={contact.id}>
-                        <p>Name: {contact.name}</p>
-                        <p>E-mail: {contact.email}</p>
-                        <p>Telephone: {contact.telephone}</p>
-                        <p>Created at: {contact.createdAt}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <p>Contact: This client doesn't have any contacts</p>
-              )}
-              <button onClick={() => deleteClient(client.id)}>
-                Delete Client
-              </button>
-              <button onClick={() => handleEditClick(client)}>
-                Edit Client
-              </button>
-            </li>
-          ))}
-      </MainDiv>
-      {showModal && (
-        <div
-          className="modal_1"
-          style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          <div
-            className="modal_2"
-            style={{
-              background: "white",
-              padding: "20px",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <ClientUpdateForm onClose={handleCloseModal} />
-          </div>
+          <p className="description">View and manage your profile.</p>
         </div>
+
+        <button
+          type="button"
+          className="toggle-button"
+          onClick={toggleListClients}
+          disabled={isLoading}
+          aria-expanded={isListClientsShowing}
+        >
+          Client
+        </button>
+      </div>
+
+      {isListClientsShowing && (
+        <MainDiv>
+          {clients.length === 0 ? (
+            <p className="empty-state">No client information available.</p>
+          ) : (
+            <ul className="clients-list">
+              {clients.map((client) => (
+                <li key={client.id} className="client-card">
+                  <h4>Name: {client.name}</h4>
+
+                  <div className="client-info">
+                    <p>E-mail: {client.email}</p>
+                    <p>Telephone: {client.telephone}</p>
+
+                    <p>Contacts linked: {client.contact?.length ?? 0}</p>
+                  </div>
+
+                  <div className="client-dates">
+                    <p>Created at: {client.createdAt}</p>
+                    <p>Updated at: {client.updatedAt}</p>
+                  </div>
+
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      className="edit-button"
+                      onClick={() => {
+                        setEditBusy(false);
+                        setEditingClient(client);
+                      }}
+                    >
+                      Edit Client
+                    </button>
+
+                    <button
+                      type="button"
+                      className="delete-button"
+                      onClick={() => setDeletingClient(client)}
+                    >
+                      Delete Client
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </MainDiv>
+      )}
+
+      {editingClient && (
+        <Modal
+          title="Edit Client"
+          onClose={() => {
+            if (!editBusy) {
+              handleCloseEdit();
+            }
+          }}
+          busy={editBusy}
+        >
+          <UpdateClientForm
+            client={editingClient}
+            onClose={handleCloseEdit}
+            onUpdated={listClients}
+            onBusyChange={setEditBusy}
+          />
+        </Modal>
+      )}
+
+      {deletingClient && (
+        <ConfirmDialog
+          title="Delete Client?"
+          itemName={deletingClient.name}
+          confirmLabel="Confirm Delete Client"
+          onClose={() => setDeletingClient(null)}
+          onConfirm={() => deleteClient(deletingClient.id)}
+        />
       )}
     </Container>
   );

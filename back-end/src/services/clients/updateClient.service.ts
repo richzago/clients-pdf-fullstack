@@ -1,33 +1,33 @@
 import { AppDataSource } from "../../data-source";
 import { Client } from "../../entities/client.entity";
-import { AppError } from "../../errors/appError";
+import { IClientUpdate } from "../../interfaces/clients/clients";
+import { requireEntity } from "../../utils/requireEntity";
+import preparePasswordUpdate from "./preparePasswordUpdate.service";
 
-const updateClientService = async (dataClient: Partial<Client>, id: string) => {
+const updateClientService = async (
+  dataClient: IClientUpdate,
+  clientId: string,
+): Promise<void> => {
   const clientRepository = AppDataSource.getRepository(Client);
 
-  const client = await clientRepository.findOne({
-    where: {
-      id,
-    },
-  });
+  const client = requireEntity(
+    await clientRepository.findOneBy({ id: clientId }),
+    "Client not found",
+  );
 
-  if (!client) {
-    throw new AppError("Client not found", 404);
+  const { password, currentPassword, ...clientFields } = dataClient;
+
+  const updates: Partial<Client> = { ...clientFields };
+
+  if (password !== undefined) {
+    updates.password = await preparePasswordUpdate(
+      currentPassword,
+      password,
+      client.password,
+    );
   }
 
-  const dataKeys = Object.keys(dataClient);
-  if (
-    dataKeys.includes("id") ||
-    dataKeys.includes("createdAt") ||
-    dataKeys.includes("updatedAt")
-  ) {
-    throw new AppError("Not possible update id, createdAt or updatedAt");
-  }
-
-  await clientRepository.update(id, {
-    ...dataClient,
-  });
-
-  return client;
+  await clientRepository.update(clientId, updates);
 };
+
 export default updateClientService;

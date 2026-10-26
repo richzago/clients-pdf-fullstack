@@ -1,11 +1,11 @@
-import { object, string, SchemaOf } from "yup";
+import { object } from "yup";
+import { nameField, emailField, telephoneField } from "./fields.schema";
 
-import { IContactRequest } from "../interfaces/contacts/contacts";
-
-const createContactValidator: SchemaOf<IContactRequest> = object().shape({
-  name: string().required(),
-  email: string().required(),
-  telephone: string().required(),
-});
-
-export { createContactValidator };
+export const createContactValidator = object({
+  name: nameField.required("Name is required"),
+  email: emailField.required("Email is required"),
+  telephone: telephoneField(14).required("Telephone is required"),
+})
+  .noUnknown(true, "Invalid fields for contact creation")
+  .strict(true)
+  .required();

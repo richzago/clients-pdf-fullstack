@@ -2,66 +2,115 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   display: flex;
-  flex-direction: row;
   justify-content: center;
-  p,
-  h2 {
-    color: white;
-  }
-  border-bottom: 2px dashed #1c6ea4;
+
   width: 100%;
-  padding: 12px;
+  padding: 24px 16px;
 `;
 
 export const FormStyle = styled.form`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
+  gap: 20px;
+
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+
+  background-color: #111c31;
+  border: 1px solid #334155;
+  border-radius: 12px;
+
+  h2 {
+    margin: 0;
+
+    color: #f8fafc;
+    font-size: 24px;
+  }
+
+  .subtitle {
+    margin: -12px 0 4px;
+
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    color: #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
+  }
 
   input {
-    padding: 3px;
-    font-size: 15px;
-    border-width: 1px;
-    border-color: #ededed;
-    background-color: #ffffff;
-    color: black;
-    border-style: solid;
-    border-radius: 8px;
-    box-shadow: 0px 0px 11px rgba(66, 66, 66, 0.75);
-    text-shadow: -5px 0px 8px rgba(66, 66, 66, 0.75);
-    z-index: 9999;
-  }
-  input:focus {
-    outline: none;
-  }
+    width: 100%;
+    padding: 12px;
 
-  button {
-    background-color: rgba(23, 26, 32, 0.8);
-    border: none;
+    background-color: #0f172a;
+    color: #f8fafc;
+
+    border: 1px solid #475569;
     border-radius: 6px;
-    color: #fff;
-    flex-grow: 1;
-    font-family: SFProText-Regular, Helvetica, Arial, sans-serif;
+
     font-size: 15px;
-    height: 36px;
-    line-height: 20px;
-    margin-left: 8px;
-    margin-right: 6px;
-    min-width: 185px;
-    padding: 0 16px 0 16px;
-    color: white;
-    cursor: pointer;
   }
 
-  button:hover {
-    background-color: rgba(23, 26, 32, 1);
-    cursor: pointer;
+  input::placeholder {
+    color: #94a3b8;
+  }
+
+  input:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+  }
+
+  input[aria-invalid="true"] {
+    border-color: #fca5a5;
   }
 
   .error {
-    color: red;
     margin: 0;
+
+    color: #fca5a5;
+    font-size: 13px;
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 12px;
+
+    background-color: #2563eb;
+    color: #ffffff;
+
+    border: 1px solid #2563eb;
+    border-radius: 6px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .submit-button:hover {
+    background-color: #1d4ed8;
+  }
+
+  .submit-button:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 24px;
+
+    h2 {
+      font-size: 22px;
+    }
   }
 `;

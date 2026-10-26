@@ -1,40 +1,74 @@
-import React from "react";
-import { render, fireEvent, waitFor, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
+import type { ContextType } from "react";
+
 import LoginClient from "../../components/forms/loginClient";
-import api from "../../services/api";
-import MockAdapter from "axios-mock-adapter";
+import { AuthContext } from "../../contexts/AuthContext";
 
-const mockedNavigate = jest.fn();
+describe("LoginClient", () => {
+  it("deve enviar email e senha para o contexto de autenticacao", async () => {
+    // ARRANGE: preparar as dependências do teste
+    const clientLoginMock = vi.fn();
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  Link: ({ children }: any) => children,
-  useNavigate: () => ({
-    navigate: mockedNavigate,
-  }),
-}));
+    const contextValue: ContextType<typeof AuthContext> = {
+      clientLogin: clientLoginMock,
+      clientRegister: vi.fn(),
+      listClients: vi.fn(),
+      listContacts: vi.fn(),
+      deleteClient: vi.fn(),
+      deleteContact: vi.fn(),
+      contactRegister: vi.fn(),
 
-const apiMock = new MockAdapter(api);
+      clients: [],
+      contacts: [],
 
-describe("Post /login", () => {
-  it("should be able to sign in", async () => {
-    apiMock.onPost("/login").replyOnce(200, {});
-    render(<LoginClient />);
+      client: {
+        name: "",
+        email: "",
+        password: "",
+        telephone: "",
+      },
 
-    const emailField = screen.getByPlaceholderText("Email");
-    const passwordField = screen.getByPlaceholderText("Password");
+      setClient: vi.fn(),
+      isAuthenticated: false,
+      setIsAuthenticated: vi.fn(),
+    };
 
-    const buttonElement = screen.getByText("Login");
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={contextValue}>
+          <LoginClient />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    );
 
-    fireEvent.change(emailField, { target: { value: "email@example.com" } });
-    fireEvent.change(passwordField, { target: { value: "1234" } });
+    // ACT: simular a interação do usuário
+    const emailInput = screen.getByPlaceholderText("Email");
+    const passwordInput = screen.getByPlaceholderText("Password");
 
-    fireEvent.click(buttonElement);
+    const submitButton = screen.getByRole("button", {
+      name: "Login",
+    });
 
-    await waitFor(async () => {
-      await expect(emailField).toHaveValue("email@example.com");
-      await expect(passwordField).toHaveValue("1234");
-      await expect(mockedNavigate).toHaveBeenCalledWith("/dashboard");
+    fireEvent.change(emailInput, {
+      target: { value: "teste@email.com" },
+    });
+
+    fireEvent.change(passwordInput, {
+      target: { value: "12345678" },
+    });
+
+    fireEvent.click(submitButton);
+
+    // ASSERT: verificar o resultado
+    await waitFor(() => {
+      expect(clientLoginMock).toHaveBeenCalledTimes(1);
+
+      expect(clientLoginMock).toHaveBeenCalledWith({
+        email: "teste@email.com",
+        password: "12345678",
+      });
     });
   });
 });

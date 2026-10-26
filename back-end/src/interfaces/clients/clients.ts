@@ -1,3 +1,6 @@
+import { Client } from "../../entities/client.entity";
+import { Contact } from "../../entities/contact.entity";
+
 export interface IClientRequest {
   name: string;
   email: string;
@@ -14,17 +17,17 @@ export interface IClient {
   updatedAt: string;
 }
 
-
 export interface IClientUpdate {
   name?: string;
   email?: string;
-  password?: string;
   telephone?: string;
+  password?: string;
+  currentPassword?: string;
 }
 
-import { IContact } from "../../interfaces/contacts/contacts";
+
 
 export interface IClientWithContacts {
-  client: IClient;
-  contact: IContact[];
+  client: Client;
+  contacts: Contact[];
 }

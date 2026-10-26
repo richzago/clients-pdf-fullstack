@@ -5,6 +5,7 @@
     "emitDecoratorMetadata": true /* Emit design-type metadata for decorated declarations in source files. */,
     "module": "commonjs",
     "typeRoots": ["src/@types", "node_modules/@types"],
+    "types": ["node", "jest"],
     "outDir": "./dist",
     "esModuleInterop": true /* Specify what module code is generated. */,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,

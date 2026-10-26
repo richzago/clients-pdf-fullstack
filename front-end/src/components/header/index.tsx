@@ -3,7 +3,11 @@ import { Container } from "./style";
 export const Header = () => {
   return (
     <Container>
-      <h2>Clients Project</h2>
+      <div className="header-content">
+        <h1>Clients Project</h1>
+
+        <p>Client and contact management</p>
+      </div>
     </Container>
   );
 };

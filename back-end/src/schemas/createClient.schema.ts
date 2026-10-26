@@ -1,12 +1,17 @@
-import { object, string, SchemaOf } from "yup";
+import { object } from "yup";
+import {
+  nameField,
+  emailField,
+  telephoneField,
+  passwordField,
+} from "./fields.schema";
 
-import { IClientRequest } from "../interfaces/clients/clients";
-
-const createClientValidator: SchemaOf<IClientRequest> = object().shape({
-  name: string().required(),
-  email: string().required(),
-  password: string().required(),
-  telephone: string().required(),
-});
-
-export { createClientValidator };
+export const createClientValidator = object({
+  name: nameField.required("Name is required"),
+  email: emailField.required("Email is required"),
+  telephone: telephoneField(20).required("Telephone is required"),
+  password: passwordField.required("Password is required"),
+})
+  .noUnknown(true, "Invalid fields for client creation")
+  .strict(true)
+  .required();
