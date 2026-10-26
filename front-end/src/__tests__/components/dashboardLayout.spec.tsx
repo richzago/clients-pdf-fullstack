@@ -26,6 +26,41 @@ const mockedContacts: IContact[] = Array.from({ length: 12 }, (_, index) => ({
 }));
 
 describe("Layout do Dashboard", () => {
+  it("deve carregar os contatos automaticamente no dashboard", async () => {
+    const listContactsMock = vi.fn(async () => {});
+
+    const context = createMockAuthContext({
+      isAuthenticated: true,
+      contacts: mockedContacts,
+      listContacts: listContactsMock,
+    });
+
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={context}>
+          <DashboardContact autoLoad />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    );
+
+    // Não clicamos no botão Search Contacts!
+    await waitFor(() => {
+      expect(listContactsMock).toHaveBeenCalledTimes(1);
+    });
+
+    const contactsList = await screen.findByRole("list", {
+      name: "Contacts list",
+    });
+
+    expect(within(contactsList).getAllByRole("listitem")).toHaveLength(12);
+
+    expect(
+      screen.getByRole("button", {
+        name: "Search Contacts!",
+      }),
+    ).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("deve renderizar as secoes principais", () => {
     const context = createMockAuthContext({
       isAuthenticated: true,

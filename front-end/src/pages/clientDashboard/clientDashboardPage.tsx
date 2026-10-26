@@ -28,7 +28,7 @@ const ClientDashboardPage = () => {
           </div>
 
           <div className="content">
-            <DashboardContact />
+            <DashboardContact autoLoad />
           </div>
         </DashboardGrid>
       </Main>

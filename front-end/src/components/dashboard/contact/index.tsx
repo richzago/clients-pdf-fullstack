@@ -1,18 +1,30 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import { AuthContext } from "../../../contexts/AuthContext";
 import type { IContact } from "../../../interfaces/client";
 
 import UpdateContactForm from "../../forms/updateContact";
 import Modal from "../../ui/Modal";
-
-import { Container, MainDiv } from "./style";
 import ConfirmDialog from "../../ui/Modal/ConfirmDialog";
 
-export const DashboardContact = () => {
+import { Container, MainDiv } from "./style";
+
+interface DashboardContactProps {
+  autoLoad?: boolean;
+}
+
+export const DashboardContact = ({
+  autoLoad = false,
+}: DashboardContactProps) => {
   const { contacts, listContacts, deleteContact } = useContext(AuthContext);
 
-  const [isListContactsShowing, setIsListContactsShowing] = useState(false);
+  // No dashboard, a lista pode começar aberta.
+  const [isListContactsShowing, setIsListContactsShowing] = useState(autoLoad);
+
+  const [isLoading, setIsLoading] = useState(autoLoad);
+
+  // Evita executar a busca inicial repetidamente.
+  const initialLoadStarted = useRef(false);
 
   const [editBusy, setEditBusy] = useState(false);
 
@@ -20,9 +32,29 @@ export const DashboardContact = () => {
 
   const [deletingContact, setDeletingContact] = useState<IContact | null>(null);
 
+  // Busca inicial dos contatos.
+  useEffect(() => {
+    if (!autoLoad || initialLoadStarted.current) {
+      return;
+    }
+
+    initialLoadStarted.current = true;
+
+    void listContacts().finally(() => {
+      setIsLoading(false);
+    });
+  }, [autoLoad, listContacts]);
+
+  // Mantém o botão de abrir e fechar a lista.
   const toggleListContacts = async () => {
     if (!isListContactsShowing) {
-      await listContacts();
+      setIsLoading(true);
+
+      try {
+        await listContacts();
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     setIsListContactsShowing((previous) => !previous);
@@ -38,6 +70,7 @@ export const DashboardContact = () => {
       <div className="section-header">
         <div>
           <h3 id="contacts-title">Contacts</h3>
+
           <p>View, edit and manage your contacts.</p>
         </div>
 
@@ -45,15 +78,21 @@ export const DashboardContact = () => {
           type="button"
           className="toggle-button"
           onClick={toggleListContacts}
+          disabled={isLoading}
           aria-expanded={isListContactsShowing}
+          aria-controls="contacts-panel"
         >
           Search Contacts!
         </button>
       </div>
 
       {isListContactsShowing && (
-        <MainDiv>
-          {contacts.length === 0 ? (
+        <MainDiv id="contacts-panel">
+          {isLoading ? (
+            <p className="empty-state" role="status">
+              Loading contacts...
+            </p>
+          ) : contacts.length === 0 ? (
             <p className="empty-state">There are no contacts to show</p>
           ) : (
             <ul className="contacts-list" aria-label="Contacts list">
@@ -102,7 +141,9 @@ export const DashboardContact = () => {
         <Modal
           title="Edit Contact"
           onClose={() => {
-            if (!editBusy) handleCloseEdit();
+            if (!editBusy) {
+              handleCloseEdit();
+            }
           }}
           busy={editBusy}
         >
