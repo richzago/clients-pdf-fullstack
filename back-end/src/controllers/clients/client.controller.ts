@@ -8,6 +8,7 @@ import generateHTML from "../../utils/generateHTML";
 import convertToPDF from "../../utils/convertToPDF";
 import listClientsService from "../../services/clients/listClient.service";
 import listClientsRelatoryService from "../../services/clients/listClientsRelatory.service";
+import { AppError } from "../../errors/appError";
 
 const createClientController = async (
   req: Request,
@@ -37,11 +38,20 @@ const updateClientController = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
-  const id: string = req.params.id;
+  const requestedId = req.params.id;
+  const authenticatedId = req.client.id;
   const dataUser = req.body;
-  const updatedClient = await updateClientService(dataUser, id);
 
-  return res.status(200).json({ message: "Update successful" });
+  // Impede a atualização de outra conta.
+  if (requestedId !== authenticatedId) {
+    throw new AppError("You are not allowed to update this account", 403);
+  }
+
+  await updateClientService(dataUser, authenticatedId);
+
+  return res.status(200).json({
+    message: "Update successful",
+  });
 };
 
 const relatoryClientsController = async (
