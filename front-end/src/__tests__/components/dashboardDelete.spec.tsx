@@ -16,8 +16,8 @@ const mockedClient: IClientsList = {
   name: "Cliente de Teste",
   email: "cliente@email.com",
   telephone: "51999999999",
-  createdAt: "2026-10-01T10:00:00.000Z",
-  updatedAt: "2026-10-01T10:00:00.000Z",
+  createdAt: "2026-10-01",
+  updatedAt: "2026-10-01",
   contact: [],
 };
 
@@ -26,13 +26,13 @@ const mockedContact: IContact = {
   name: "Contato de Teste",
   email: "contato@email.com",
   telephone: "51988888888",
-  createdAt: "2026-10-01T10:00:00.000Z",
-  updatedAt: "2026-10-01T10:00:00.000Z",
+  createdAt: "2026-10-01",
+  updatedAt: "2026-10-01",
 };
 
-describe("Exclusao pelo dashboard", () => {
-  it("deve passar o UUID correto ao excluir um cliente", async () => {
-    const deleteClientMock = vi.fn();
+describe("Exclusao com confirmacao no Dashboard", () => {
+  it("deve excluir o cliente somente apos confirmar", async () => {
+    const deleteClientMock = vi.fn(async () => true);
 
     const context = createMockAuthContext({
       isAuthenticated: true,
@@ -54,17 +54,66 @@ describe("Exclusao pelo dashboard", () => {
       await screen.findByText("Name: Cliente de Teste"),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete Client" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Delete Client",
+      }),
+    );
 
-    expect(deleteClientMock).toHaveBeenCalledTimes(1);
-    expect(deleteClientMock).toHaveBeenCalledWith(mockedClient.id);
+    expect(deleteClientMock).not.toHaveBeenCalled();
+
+    expect(
+      screen.getByRole("dialog", {
+        name: "Delete Client?",
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Confirm Delete Client",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(deleteClientMock).toHaveBeenCalledWith(mockedClient.id);
+    });
   });
 
-  it("deve passar o UUID correto ao excluir um contato", async () => {
-    const deleteContactMock = vi.fn();
+  it("deve permitir cancelar a exclusao do cliente", async () => {
+    const deleteClientMock = vi.fn(async () => true);
 
     const context = createMockAuthContext({
-      isAuthenticated: true,
+      clients: [mockedClient],
+      deleteClient: deleteClientMock,
+    });
+
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={context}>
+          <DashboardClient />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Client" }));
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "Delete Client",
+      }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(deleteClientMock).not.toHaveBeenCalled();
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("deve excluir contato somente apos confirmar", async () => {
+    const deleteContactMock = vi.fn(async () => true);
+
+    const context = createMockAuthContext({
       contacts: [mockedContact],
       deleteContact: deleteContactMock,
     });
@@ -93,11 +142,61 @@ describe("Exclusao pelo dashboard", () => {
       }),
     );
 
-    expect(deleteContactMock).toHaveBeenCalledTimes(1);
-    expect(deleteContactMock).toHaveBeenCalledWith(mockedContact.id);
+    expect(deleteContactMock).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Confirm Delete Contact",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(deleteContactMock).toHaveBeenCalledWith(mockedContact.id);
+    });
   });
 
-  it("deve permitir abrir e fechar a listagem de contatos", async () => {
+  it("deve manter o modal aberto quando a exclusao falhar", async () => {
+    const deleteContactMock = vi.fn(async () => false);
+
+    const context = createMockAuthContext({
+      contacts: [mockedContact],
+      deleteContact: deleteContactMock,
+    });
+
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={context}>
+          <DashboardContact />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Search Contacts!",
+      }),
+    );
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "Delete Contact",
+      }),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Confirm Delete Contact",
+      }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to delete. Please try again.",
+    );
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("deve permitir fechar a listagem de contatos", async () => {
     const context = createMockAuthContext({
       contacts: [mockedContact],
     });
@@ -110,17 +209,17 @@ describe("Exclusao pelo dashboard", () => {
       </MemoryRouter>,
     );
 
-    const toggleButton = screen.getByRole("button", {
+    const button = screen.getByRole("button", {
       name: "Search Contacts!",
     });
 
-    fireEvent.click(toggleButton);
+    fireEvent.click(button);
 
     expect(
       await screen.findByText("Name: Contato de Teste"),
     ).toBeInTheDocument();
 
-    fireEvent.click(toggleButton);
+    fireEvent.click(button);
 
     await waitFor(() => {
       expect(

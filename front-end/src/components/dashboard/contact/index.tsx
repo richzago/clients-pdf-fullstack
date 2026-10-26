@@ -4,14 +4,21 @@ import { AuthContext } from "../../../contexts/AuthContext";
 import type { IContact } from "../../../interfaces/client";
 
 import UpdateContactForm from "../../forms/updateContact";
+import Modal from "../../ui/Modal";
+
 import { Container, MainDiv } from "./style";
+import ConfirmDialog from "../../ui/Modal/ConfirmDialog";
 
 export const DashboardContact = () => {
   const { contacts, listContacts, deleteContact } = useContext(AuthContext);
 
   const [isListContactsShowing, setIsListContactsShowing] = useState(false);
 
+  const [editBusy, setEditBusy] = useState(false);
+
   const [editingContact, setEditingContact] = useState<IContact | null>(null);
+
+  const [deletingContact, setDeletingContact] = useState<IContact | null>(null);
 
   const toggleListContacts = async () => {
     if (!isListContactsShowing) {
@@ -21,12 +28,9 @@ export const DashboardContact = () => {
     setIsListContactsShowing((previous) => !previous);
   };
 
-  const handleEditClick = (contact: IContact) => {
-    setEditingContact(contact);
-  };
-
-  const handleCloseModal = () => {
+  const handleCloseEdit = () => {
     setEditingContact(null);
+    setEditBusy(false);
   };
 
   return (
@@ -34,7 +38,6 @@ export const DashboardContact = () => {
       <div className="section-header">
         <div>
           <h3 id="contacts-title">Contacts</h3>
-
           <p>View, edit and manage your contacts.</p>
         </div>
 
@@ -72,7 +75,10 @@ export const DashboardContact = () => {
                     <button
                       type="button"
                       className="edit-button"
-                      onClick={() => handleEditClick(contact)}
+                      onClick={() => {
+                        setEditBusy(false);
+                        setEditingContact(contact);
+                      }}
                     >
                       Edit Contact
                     </button>
@@ -80,7 +86,7 @@ export const DashboardContact = () => {
                     <button
                       type="button"
                       className="delete-button"
-                      onClick={() => deleteContact(contact.id)}
+                      onClick={() => setDeletingContact(contact)}
                     >
                       Delete Contact
                     </button>
@@ -93,36 +99,30 @@ export const DashboardContact = () => {
       )}
 
       {editingContact && (
-        <div
-          className="modal_1"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            zIndex: 100,
+        <Modal
+          title="Edit Contact"
+          onClose={() => {
+            if (!editBusy) handleCloseEdit();
           }}
+          busy={editBusy}
         >
-          <div
-            className="modal_2"
-            style={{
-              background: "white",
-              padding: "20px",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <UpdateContactForm
-              contact={editingContact}
-              onClose={handleCloseModal}
-              onUpdated={listContacts}
-            />
-          </div>
-        </div>
+          <UpdateContactForm
+            contact={editingContact}
+            onClose={handleCloseEdit}
+            onUpdated={listContacts}
+            onBusyChange={setEditBusy}
+          />
+        </Modal>
+      )}
+
+      {deletingContact && (
+        <ConfirmDialog
+          title="Delete Contact?"
+          itemName={deletingContact.name}
+          confirmLabel="Confirm Delete Contact"
+          onClose={() => setDeletingContact(null)}
+          onConfirm={() => deleteContact(deletingContact.id)}
+        />
       )}
     </Container>
   );

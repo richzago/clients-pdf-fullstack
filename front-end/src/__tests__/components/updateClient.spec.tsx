@@ -176,12 +176,12 @@ describe("UpdateClientForm", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it("deve fechar o modal sem enviar PATCH ao clicar no X", () => {
+  it("deve cancelar a edicao sem enviar PATCH", () => {
     const { onClose, onUpdated } = renderForm();
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: "X",
+        name: "Cancel",
       }),
     );
 
